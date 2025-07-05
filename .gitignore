@@ -1,10 +1,15 @@
-# Python cache
-__pycache__/
-
 # Virtual Environment
 venv/
-*.venv
+*.pyc
+__pycache__/
 
 # Database file
 *.db
 *.sqlite3
+
+# Instance folder
+instance/
+
+# IDE settings
+.vscode/
+.idea/
