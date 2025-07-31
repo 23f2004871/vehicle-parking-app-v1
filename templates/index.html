@@ -1,0 +1,54 @@
+{% extends "base_layout.html" %}
+{% block title %}Welcome to V-Parking{% endblock %}
+{% block content %}
+<div class="hs my-4">
+    <div class="container">
+        <h1 style="font-size: xxx-large;color:white;">Effortless Parking, Simplified.</h1>
+        <p class="lead my-4">Find, book, and manage your parking spots in Chennai with ease.</p>
+
+        {% if session.uid %}
+            {% if session.role == 'admin' %}
+                <a href="{{ url_for('admin.admin_dashboard') }}" class="btn btn-primary btn-lg">
+                    <i class="bi bi-speedometer2 me-2"></i>Go to Admin Dashboard
+                </a>
+            {% else %}
+                <a href="{{ url_for('dashboard.dashboard') }}" class="btn btn-primary btn-lg">
+                    <i class="bi bi-map me-2"></i>Go to Dashboard
+                </a>
+            {% endif %}
+        {% else %}
+            <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-lg">
+                <i class="bi bi-person-plus me-2"></i>Get Started
+            </a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="container mt-5">
+    <h2 class="text-center mb-4">Why Choose V-Parking?</h2>
+    <div class="row text-center">
+        <div class="col-md-4 mb-4">
+            <div class="card p-4"style="color:white;background-color:#240345;">
+                <i class="bi text-primary mb-3 bi-geo-alt-fill " style="font-size: 3rem;"></i>
+                <h3>Find Easily</h3>
+                <p>Use our interactive map to find the nearest parking lots.</p>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card p-4"style="color:white;background-color:#240345;">
+                <i class=" text-primary bi bi-calendar-check-fill mb-3" style="font-size: 3rem;"></i>
+                <h3>Book Instantly</h3>
+                <p>Secure your spot in seconds with our simple booking process.</p>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card p-4"style="color:white;background-color:#240345;">
+                <i class=" text-primary mb-3 bi bi-phone-fill" style="font-size: 3rem;"></i>
+                <h3>Manage on the Go</h3>
+                <p>View your parking history and manage your vehicles anytime.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
