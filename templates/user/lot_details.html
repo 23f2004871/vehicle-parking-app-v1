@@ -1,0 +1,104 @@
+{% extends "base_layout.html" %}
+{% block title %}{{ l.prime_location_name }} - Details{% endblock %}
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h3>{{ l.prime_location_name }}</h3>
+                {% if l.ratings and l.reviewno > 0 %}
+                    <span class="badge bg-warning text-dark fs-6">
+                        <i class="bi bi-star-fill"></i> {{ '%.1f'|format(l.ratings) }} ({{ l.reviewno }} reviews)
+                    </span>
+                {% endif %}
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h5>Location Details</h5>
+                        <p><i class="bi bi-geo-alt"></i> <strong>Address:</strong><br>{{ l.address }}</p>
+                        {% if l.city and l.state %}
+                            <p><i class="bi bi-building"></i> <strong>City:</strong> {{ l.city }}, {{ l.state }}</p>
+                        {% endif %}
+                        {% if l.pin_code %}
+                            <p><i class="bi bi-mailbox"></i> <strong>PIN Code:</strong> {{ l.pin_code }}</p>
+                        {% endif %}
+                        
+                        <h5 class="mt-4">Pricing & Timing</h5>
+                        <p><i class="bi bi-currency-rupee"></i> <strong>Rate:</strong> ₹{{ "%.2f"|format(l.price) }} per hour</p>
+                        {% if l.opening and l.closing %}
+                            <p><i class="bi bi-clock"></i> <strong>Hours:</strong> {{ l.opening.strftime('%I:%M %p') }} - {{ l.closing.strftime('%I:%M %p') }}</p>
+                        {% else %}
+                            <p><i class="bi bi-clock"></i> <strong>Hours:</strong> Open 24/7</p>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <h5>Facilities</h5>
+                        <p><i class="bi bi-car-front"></i> <strong>Total Spots:</strong> {{ l.maximum_number_of_spots }}</p>
+                        {% if l.amenities %}
+                            <p><i class="bi bi-check-circle"></i> <strong>Amenities:</strong><br>{{ l.amenities }}</p>
+                        {% endif %}
+                        
+                        {% if l.lat and l.lon %}
+                            <h5 class="mt-4">Location</h5>
+                            <p><i class="bi bi-geo"></i> <strong>Coordinates:</strong><br>{{ l.lat }}, {{ l.lon }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5>Book a Spot</h5>
+            </div>
+            <div class="card-body">
+                <form action="{{ url_for('user.book_spot', lid=l.id) }}" method="POST">
+                    {% if uv %}
+                        <div class="mb-3">
+                            <label for="vi" class="form-label">Select Vehicle</label>
+                            <select name="vehicle_id" class="form-select" required>
+                                <option value="">Choose your vehicle...</option>
+                                {% for v in uv %}
+                                    <option value="{{ v.id }}">
+                                        {{ v.license_plate }} - {{ v.make }} {{ v.model }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Select Spot Type</label>
+                            <div class="d-grid gap-2">
+                                <button type="submit" name="spot_type" value="standard" class="btn btn-outline-primary">
+                                    <i class="bi bi-car-front"></i> Standard Spot
+                                    <small class="d-block text-muted">₹{{ l.price }}/hr</small>
+                                </button>
+                                <button type="submit" name="spot_type" value="premium" class="btn btn-outline-success">
+                                    <i class="bi bi-star"></i> Premium Spot
+                                    <small class="d-block text-muted">₹{{ "%.0f"|format(l.price * 1.5) }}/hr - Wider, covered spots</small>
+                                </button>
+                                <button type="submit" name="spot_type" value="ev" class="btn btn-outline-info">
+                                    <i class="bi bi-lightning-charge"></i> EV Charging Spot
+                                    <small class="d-block text-muted">₹{{ "%.0f"|format(l.price * 1.25) }}/hr + charging</small>
+                                </button>
+                            </div>
+                        </div>
+                    {% else %}
+                        <p class="text-muted">You need to add a vehicle before booking.</p>
+                        <a href="{{ url_for('user.my_vehicles') }}" class="btn btn-outline-primary">Add Vehicle</a>
+                    {% endif %}
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+
+
+
+

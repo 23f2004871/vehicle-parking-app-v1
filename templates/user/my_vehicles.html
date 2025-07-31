@@ -1,0 +1,66 @@
+{%extends "base_layout.html"%}
+{%block title%}My Vehicles{%endblock%}
+{%block content%}
+<div class="row">
+    <div class="col-lg-8 mb-4">
+        <h2 class="mb-4"><span style="font-weight:bold;">My Registered Vehicles</span></h2>
+        <div class="card shadow-sm"style="color:white;background-color:#240345;">
+            <div class="card-body">
+                {%if vehicles%}
+                <ul class="list-group list-group-flush">
+                    {%for v in vehicles%}
+                    <li style="color:white;background-color:#3B0571;"class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong class="fs-5">{{v.license_plate}}</strong><br>
+                            <small class="">{{v.color}} {{v.make}} {{v.model}}</small>
+                        </div>
+                        <form action="{{url_for('user.delete_vehicle', vid=v.id)}}"method="POST"onsubmit="return confirm('Are you sure?');">
+                            <button type="submit"class="btn btn-sm btn-outline-danger">Delete</button>
+                        </form>
+                    </li>
+                    {%endfor%}
+                </ul>
+                {%else%}
+                <p class="text-center">You have not added any vehicles yet.</p>
+                {%endif%}
+            </div>
+        </div>
+    </div>
+<style>
+    .input{
+        background-color:#240345
+        
+   }
+</style>
+    <div class="col-lg-4 mb-4">
+        <h2 class="mb-4"><span style="font-weight:bold;"><span style="font-weight:bold;">Add a Vehicle</span></h2>
+        <div class="card shadow-sm"style="color:white;background-color:#240345;">
+            <div class="card-body">
+                <form action="{{url_for('user.add_vehicle')}}"method="POST">
+                    <div class="mb-3">
+                        <label for="lp"class="form-label">License Plate</label>
+                        <input id="lp"style="border-width:0px;background-color:#3B0571;color:white;"type="text"class="form-control"name="license_plate"required>
+                    </div>
+                    <div class="mb-4">
+                        <label for="m"class="form-label">Make (e.g., Toyota)</label>
+                        <input type="text"name="make"class="form-control"style="border-width:0px;background-color:#3B0571;color:white;"id="m">
+                    </div>
+                    <div class="mb-4">
+                        <label for="md"class="form-label">Model (e.g., Corolla)</label>
+                        <input type="text"class="form-control"id="md"name="model"style="border-width:0px;background-color:#3B0571;color:white;">
+                    </div>
+                    <div class="mb-4">
+                        <label for="c"class="form-label">Color</label>
+                        <input id="c"style="border-width:0px;background-color:#3B0571;color:white;"type="text"class="form-control"name="color">
+                    </div>
+                    <div class="d-grid">
+                        <button class="btn btn-primary"type="submit">Add Vehicle</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{%endblock%}
+
+

@@ -1,0 +1,96 @@
+{% extends "base_layout.html" %}
+
+{% block title %}Payment Receipt{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-7">
+        <h2 class="mb-4 text-center">Payment Receipt</h2>
+        <div class="card shadow-sm">
+            <div class="card-header text-center bg-success text-white">
+                <h4><i class="bi bi-check-circle-fill"></i> Transaction Successful</h4>
+            </div>
+            <div class="card-body p-4">
+                <p class="text-center mb-4">Thank you for your payment. Here are the details of your transaction:</p>
+                
+                <h5 class="mt-4">Payment Details</h5>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span>Transaction ID:</span>
+                        <strong>{{ p.transaction_id }}</strong>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span>Date & Time:</span>
+                        <strong>{{ p.timestamp.strftime('%d-%b-%Y %H:%M') }}</strong>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span>Payment Method:</span>
+                        <strong>{{ p.payment_method }}</strong>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span>Status:</span>
+                        <strong class="text-success">{{ p.status }}</strong>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between bg-light">
+                        <span class="fs-5">Amount Paid:</span>
+                        <strong class="fs-5 text-success">₹{{ "%.2f"|format(p.amount) }}</strong>
+                    </li>
+                </ul>
+                
+                <hr>
+                
+                <h5 class="mt-4">Parking Details</h5>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span>Reservation ID:</span>
+                        <strong>#{{ r.id }}</strong>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span>Parking Lot:</span>
+                        <strong>{{ r.spot.lot.prime_location_name }}</strong>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span>Spot Number:</span>
+                        <strong>#{{ r.spot.spot_number }}</strong>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span>Vehicle:</span>
+                        <strong>{{ r.vno }}</strong>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span>Duration:</span>
+                        <strong>{{ r.durmin }} minutes</strong>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span>Parked:</span>
+                        <strong>{{ r.parking_timestamp.strftime('%d-%b-%Y %H:%M') }}</strong>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span>Left:</span>
+                        <strong>{{ r.leaving_timestamp.strftime('%d-%b-%Y %H:%M') if r.leaving_timestamp else 'N/A' }}</strong>
+                    </li>
+                </ul>
+                
+                <div class="text-center mt-4">
+                    <a href="{{ url_for('user.my_parkings') }}" class="btn btn-primary">
+                        <i class="bi bi-arrow-left"></i> Back to My Parkings
+                    </a>
+                    <button onclick="window.print()" class="btn btn-outline-secondary ms-2">
+                        <i class="bi bi-printer"></i> Print Receipt
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+
+
+
+
+
+
+
+
+

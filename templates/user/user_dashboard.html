@@ -1,0 +1,347 @@
+{% extends "base_layout.html"%}
+
+{% block title %}Find Parking Lots{% endblock %}
+
+{% block content %}
+<link rel="stylesheet"href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<style>
+#map { 
+height:100vh; 
+border-top-left-radius:8px;
+border-bottom-left-radius:5px;
+border-top-right-radius:8px;
+border-bottom-right-radius:5px;
+box-shadow:3px 3px 5px  #474747;
+
+}
+.li { 
+cursor:pointer; 
+transition:background-color 0.4s;
+border-radius:10px;   
+}
+.li:hover { 
+background-color:#dfe1e2; 
+}
+.li.hl {
+background-color:#e7f3ff;
+border-left:4px solid #007bff;
+border-right:4px solid #007bff;
+
+border-top:4px solid #007bff;
+border-bottom:4px solid #007bff;
+}
+.form-check{
+    margin-top:8px;
+    margin-left:20px;
+}
+
+</style>
+
+<div class="card mb-4"style="color:white;background-color:#240345;">
+<div class="card-body">
+        <form method="GET"action="{{url_for('user.dashboard')}}"class="row g-3">
+            <div class="col-md-8">
+                <input style="color:white;background-color:#3B0571;border-width:0px;"type="text"class="form-control"name="q"value="{{ q or '' }}">
+            </div>
+            <div class="col-md-2">
+                <div class="form-check">
+                 <input class="form-check-input"type="checkbox"name="open_now"id="on"{% if open_now %}checked{% endif %}>
+                    <label class="form-check-label"for="on">Open Now</label>
+                </div>
+            </div>
+            <div class="col-md-2">
+            <button type="submit"class="btn btn-primary me-3">Search</button>
+                <a href="{{url_for('user.dashboard')}}"class="btn btn-outline-secondary">Clear</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card shadow-sm"style="color:white;background-color:#240345;">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span style="font-size:1.2em; font-weight:bold;">Parking Map View</span>
+                <div class="btn-group btn-group-sm"role="group">
+                    <button type="button"class="btn btn-outline-primary"id="lb"> My Location</button>
+                    <button type="button"class="btn btn-outline-secondary"id="rb"> Reset View</button>
+                </div>
+            </div>
+            <div class="position-relative">
+                <div id="map"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card shadow-sm"style="color:white;background-color:#240345;">
+            <div class="card-header d-flex justify-content-between">
+                <span style="font-size:1.2em; font-weight:bold; align-items:center;">Available Lots</span>
+                <div class="dropdown">
+                    <button class="btn btn-sm btn-secondary dropdown-toggle"type="button"data-bs-toggle="dropdown">
+                        Filter
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item"href="#"data-filter="all">All Lots</a></li>
+                        <li><a class="dropdown-item"href="#"data-filter="cheap">Under ₹75/hr</a></li>
+                        <li><a class="dropdown-item"href="#"data-filter="premium">Premium (₹100+/hr)</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="list-group list-group-flush"style="max-height:65vh; overflow-y:auto;"id="ll">
+                {% for d in av %}
+                <div style="color:white;background-color:#3B0571;"class="list-group-item li"data-lot-id="{{ d.lot.id }}"data-price="{{ d.lot.price }}">
+                    <div class="d-flex w-100 justify-content-between">
+                        <h4 class="mb-1"><strong>{{ d.lot.prime_location_name }}</strong></h3>
+                    </div>
+                    <p class="mb-1  small">{{ d.lot.address }},{{ d.lot.city }} - {{ d.lot.pin_code }}</p>
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <strong class="text-primary">₹{{ "%.2f"|format(d.lot.price) }}/hr</strong>
+                        {% if d.lot.ratings %}
+                        <span class="badge bg-warning text-dark">
+                            ⭐ {{ '%.1f'|format(d.lot.ratings) }}
+                        </span>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mt-auto">
+                        <form action="{{ url_for('user.book_spot_simple',lid=d.lot.id) }}"method="POST">
+                            {% if cars %}
+                                <div class="mb-2">
+                                    <select style="color:white;background-color:#3B0571;"class="form-select form-select-sm"name="vehicle_id"required>
+                                        <option value="">Select Vehicle</option>
+                                        {% for c in cars %}
+                                            <option style="color:white;background-color:#3B0571;"value="{{ c.id }}">{{ c.license_plate }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                
+                                <div class="btn-group w-100 mb-2"role="group">
+                                    {% if d.available_spots.standard > 0 %}
+                                    <button type="submit"name="spot_type"value="standard"class="btn btn-secondary">
+                                        Standard<br><small>₹{{ "%.0f"|format(d.lot.price) }}/hr</small>
+                                    </button>
+                                    {% endif %}
+                                    
+                                    {% if d.available_spots.premium > 0 %}
+                                    <button type="submit"name="spot_type"value="premium"class="btn btn-primary">
+                                        Premium<br><small>₹{{ "%.0f"|format(d.lot.price*1.5) }}/hr</small>
+                                    </button>
+                                    {% endif %}
+                                    
+                                    {% if d.available_spots.ev > 0 %}
+                                    <button type="submit"name="spot_type"value="ev"class="btn btn-info">
+                                        EV Spot<br><small>₹{{ "%.0f"|format(d.lot.price*1.25) }}/hr</small>
+                                    </button>
+                                    {% endif %}
+                                </div>
+                                
+                                {% if d.available_spots.standard == 0 and d.available_spots.premium == 0 and d.available_spots.ev == 0 %}
+                                <p class="text-muted small">No spots available</p>
+                                {% endif %}
+                            {% else %}
+                                <p class="text-muted small">
+                                    <a href="{{ url_for('user.my_vehicles') }}"class="text-decoration-none">Add a vehicle</a> to book spots
+                                </p>
+                            {% endif %}
+                        </form>
+                    </div>
+                </div>
+                {% else %}
+                <div class="list-group-item text-center">
+                    <p class="mb-0">No parking lots found ....</p>
+                    <small class="text-muted">Try adjusting your search filters.</small>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded',function(){
+    const m=L.map('map').setView([13.0712,80.2618],11);
+    let ul=null;
+    let um=null;
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
+        attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(m);
+
+    const ls={{ md | tojson }};
+    const ms={};
+    const mg=L.layerGroup().addTo(m);
+
+    const pi=L.divIcon({
+        className:'custom-parking-icon',
+        html:'<div style="background:green; color:white; border-radius:50%; width:28px; height:28px; display:grid; place-items:center; font-size:14px; border:1px solid #fff; box-shadow:1px 2px 4px rgba(0,0,0,0.2);">P</div>',
+        iconSize:[30,30],
+        iconAnchor:[15,15]
+    });
+
+    const si=L.divIcon({
+        className:'custom-parking-icon',
+        html:'<div style="background:seagreen; color:white; border-radius:50%; width:28px; height:28px; display:grid; place-items:center; font-size:14px; border:1px solid #fff; box-shadow:1px 2px 4px rgba(0,0,0,0.2);">P</div>',
+        iconSize:[30,30],
+        iconAnchor:[15,15]
+    });
+
+    ls.forEach(l => {
+        if (l.lat && l.lon) {
+            const mk=L.marker([l.lat,l.lon],{ icon:pi })
+                .bindPopup(`
+                    <div class="text-center">
+                        <h6>${l.name}</h6>
+                        <p class="mb-1">${l.address}</p>
+                        <strong class="text-primary">₹${l.price}/hr</strong>
+                        <br>
+                        <button class="btn btn-sm btn-primary mt-2"onclick="sl(${l.id})">Select This Lot</button>
+                    </div>
+                `);
+            
+            ms[l.id]=mk;
+            mg.addLayer(mk);
+
+            mk.on('click',function() {
+                hl(l.id);
+            });
+        }
+    });
+
+    document.getElementById('lb').addEventListener('click',function() {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(function(p) {
+                ul=[p.coords.latitude,p.coords.longitude];
+                
+                if (um) {
+                    m.removeLayer(um);
+                }
+                
+                um=L.marker(ul,{
+                    icon:L.divIcon({
+                        className:'user-location-icon',
+                        html:'<div style="background:#28a745; color:white; border-radius:50%; width:20px; height:20px; border:3px solid white; box-shadow:0 2px 5px rgba(0,0,0,0.3);"></div>',
+                        iconSize:[20,20],
+                        iconAnchor:[10,10]
+                    })
+                }).addTo(m).bindPopup('Your Location');
+                
+                m.setView(ul,14);
+                cd();
+            });
+        }
+    });
+
+    document.getElementById('rb').addEventListener('click',function() {
+        m.setView([13.0827,80.2707],12);
+        ch();
+    });
+
+    function cd() {
+        if (!ul) return;
+        
+        ls.forEach(l => {
+            if (l.lat && l.lon) {
+                const dt=cdt(ul[0],ul[1],l.lat,l.lon);
+                const de=document.getElementById(`d-${l.id}`);
+                if (de) {
+                    de.textContent=`${dt.toFixed(1)} km away`;
+                }
+            }
+        });
+    }
+
+    function cdt(lat1,lon1,lat2,lon2) {
+        const R=6371; 
+        const dLat=(lat2 - lat1)*Math.PI/180;
+        const dLon=(lon2 - lon1)*Math.PI/180;
+        const a=Math.sin(dLat/2)*Math.sin(dLat/2) +
+                Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180) *
+                Math.sin(dLon/2)*Math.sin(dLon/2);
+        const c=2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+        return R*c;
+    }
+
+    function hl(lid) {
+        ch();
+        const it=document.querySelector(`.li[data-lot-id="${lid}"]`);
+        if (it) {
+            it.classList.add('hl');
+            it.scrollIntoView({ behavior:'smooth',block:'center' });
+        }
+        
+        if (ms[lid]) {
+            ms[lid].setIcon(si);
+        }
+    }
+
+    function ch() {
+        document.querySelectorAll('.li').forEach(it => {
+            it.classList.remove('hl');
+        });
+        
+        Object.values(ms).forEach(mk => {
+            mk.setIcon(pi);
+        });
+    }
+
+    document.querySelectorAll('.li').forEach(it => {
+        it.addEventListener('click',function(e) {
+            if (e.target.tagName === 'BUTTON' || e.target.tagName === 'SELECT') return;
+            
+            const lid=parseInt(this.dataset.lotId);
+            const mk=ms[lid];
+            if (mk) {
+                m.setView(mk.getLatLng(),16);
+                mk.openPopup();
+                hl(lid);
+            }
+        });
+    });
+
+    document.querySelectorAll('[data-filter]').forEach(fb => {
+        fb.addEventListener('click',function(e) {
+            e.preventDefault();
+            const f=this.dataset.filter;
+            fl(f);
+        });
+    });
+
+    function fl(f) {
+        document.querySelectorAll('.li').forEach(it => {
+            const pr=parseFloat(it.dataset.price);
+            let sh=true;
+            
+            switch(f) {
+                case 'cheap':
+                    sh=pr < 75;
+                    break;
+                case 'premium':
+                    sh=pr >= 100;
+                    break;
+                case 'all':
+                default:
+                    sh=true;
+            }
+            
+            it.style.display=sh ? 'block' :'none';
+        });
+    }
+
+    window.sl=function(lid) {
+        hl(lid);
+        m.closePopup();
+    };
+});
+</script>
+{% endblock %}
+
+
+
+
+
+
+
+
+

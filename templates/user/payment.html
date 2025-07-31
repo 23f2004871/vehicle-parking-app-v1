@@ -1,0 +1,89 @@
+{% extends "base_layout.html" %}
+
+{% block title %}Complete Payment{% endblock %}
+
+{% block content %}
+<div class="row">
+    
+    <div class="col-lg-4 mb-4">
+        <center>
+            <h2 class="mb-4">
+                <span style="font-weight:bold;">
+                    Confirm & Pay
+                </span>
+            </h2>
+        </center>
+        <div style="color:white;background-color:#240345;" class="card shadow-sm">
+            <div class='card-body'>
+                <p class=''><span>This is a simulated payment form. No real card details are needed.</span></p>
+                <hr style="background-color: #3B0571; border-color: #3B0571;">
+                
+                <form action="{{ url_for('user.pay_for_reservation', reservation_id=r.id) }}" method="POST">
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Card Number</label>
+                        <br>
+                        <input readonly style="border-width:0px;background-color:#3B0571;color:white;"
+                         class="form-control" value="**** **** **** 4242" type="text" >
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">CVV</label>
+                            <input class="form-control" value="***"
+                            style="border-width:0px;background-color:#3B0571;color:white;" readonly type="text" >
+                        </div>
+
+                        <div class="mb-3 col-md-6">
+                            <label class="form-label">Expiry Date</label>
+                            <input 
+                                style="border-width:0px;background-color:#3B0571;color:white;"
+                                type="text" class="form-control" readonly value="12/25"
+                                >
+                        </div>
+                    </div>
+                    
+                    <div class='d-grid'>
+                        <button type="submit" class="btn btn-success">Confirm Payment</button>
+                    </div>
+                     <p></p>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="mb-4 col-lg-8">
+        <div>
+            <h2 class="mb-4">Complete Your Payment</h2>
+        </div>
+        <div class="card shadow-sm" style='background-color:#240345;color:white;'>
+            <div class='card-body'>
+                <h5 class="card-title"><b>Payment Summary</b></h5>
+                <ul class="mb-3 list-group list-group-flush">
+                    <li class="list-group-item d-flex justify-content-between" style="color:white;background-color:#3B0571;">
+                        <span>Parking Lot:</span>
+                        <strong>
+                            <span>
+                            {{ r.spot.lot.prime_location_name }}
+                            </span>
+                        </strong>
+                    </li>
+                    
+                    <li class='list-group-item d-flex justify-content-between' style="color:white;background-color:#3B0571;">
+                        <span>Duration:</span>
+                        <strong>{{ r.durmin }} minutes</strong>
+                    </li>
+
+                    <li class="fs-4 list-group-item d-flex justify-content-between" style="color:white;background-color:#3B0571;">
+                        <span>Total Amount:</span>
+                        <strong class="text-success">
+                            ₹{{ "%.2f"|format(r.parking_cost) }}
+                        </strong>
+                    </li>
+                </ul>
+                <div></div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

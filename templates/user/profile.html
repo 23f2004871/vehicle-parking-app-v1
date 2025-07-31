@@ -1,0 +1,80 @@
+{%extends "base_layout.html"%}
+{%block title%}My Profile{%endblock%}
+{%block content%}
+<div class="container mt-4 ">
+    <h2 class="mb-5 text-center"><span style="font-weight:bold;">My Profile</span></h2>
+
+    {%if next_url%}
+    <div class="alert alert-info">
+        <i class="bi bi-info-circle"></i> Please complete your profile with phone number and address before proceeding with booking.
+    </div>
+    {%endif%}
+
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <div class="card h-100 "style="color:white;background-color:#240345;">
+                <div class="card-header">
+                    <h4><i class="bi bi-person-circle"></i> My Details</h4>
+                </div>
+                <div class="card-body">
+                    <form action="{{ url_for('user.profile') }}"method="POST">
+                        <input value="{{ next_url or '' }}"style="border-width:0px;background-color:#3B0571;color:white;"type="hidden"name="next_url">
+                        
+                        <div class="mb-3">
+                            <label for="full_name"class="form-label">Full Name</label>
+                            <input name="full_name"style="border-width:0px;background-color:#3B0571;color:white;"class="form-control"type="text"value="{{ user.full_name or '' }}"required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="pno"class="form-label">Phone Number</label>
+                            <input type="text"name="pno"required class="form-control"style="border-width:0px;background-color:#3B0571;color:white;"value="{{ user.pno or '' }}">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="add"class="form-label">Address</label>
+                            <textarea required style="border-width:0px;background-color:#3B0571;color:white;"name="add"rows="3"class="form-control">{{ user.add or '' }}</textarea>
+                        </div>
+                        
+                        <button class="btn btn-primary"type="submit"name="update_details">
+                            <i class="bi bi-check-circle"></i> Update Details
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 mb-4">
+            <div class="card h-100 "style="color:white;background-color:#240345;">
+                <div class="card-header">
+                    <h4><i class="bi bi-shield-lock"></i> Change Password</h4>
+                </div>
+                <div class="card-body">
+                    <form action="{{url_for('user.profile')}}"method="POST">
+                        <div class="mb-4">
+                            <label for="cp"class="form-label">Current Password</label>
+                            <input id="cp"class="form-control"required name="current_password"style="border-width:0px;background-color:#3B0571;color:white;"type="password">
+                        </div>
+                        <div class="mb-4">
+                            <label for="np"class="form-label">New Password</label>
+                            <input id="np"name="new_password"type="password"style="border-width:0px;background-color:#3B0571;color:white;"class="form-control"required>
+                        </div>
+                        <div class="mb-4">
+                            <label for="cnp"class="form-label">Confirm New Password</label>
+                            <input class="form-control"id="cnp"style="border-width:0px;background-color:#3B0571;color:white;"name="confirm_password"type="password"required>
+                        </div>
+                        <button class="btn-warning mb-1 btn "type="submit"name="change_password">
+                            <i class="bi bi-key"></i> Change Password
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{%endblock%}
+
+
+
+
+
+

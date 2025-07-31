@@ -1,0 +1,144 @@
+{%extends "base_layout.html"%}
+{%block title%}Reservation Details{%endblock%}
+
+{%block content%}
+<div class="row justify-content-center">
+<div class="col-lg-8">
+<div class="card" style="background-color: #240345; color: white; border:0;">
+    <div class="card-header" style="background-color:#3B0571;">
+        <h2 class="mb-0 text-center">Reservation Number: #{{ r.id }}</h2>
+    </div>
+
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-7">
+                <h4 class="mb-3">Reservation Details</h4>
+                <ul class="list-group list-group-flush">
+    <li style="border-color:#240345;color:white;background-color:#3B0571;" class="list-group-item d-flex justify-content-between">
+<span><strong>Vehicle:</strong></span>
+        <span>{{r.vno}}</span>
+    </li>
+<li style="border-color:#240345;color:white;background-color:#3B0571;" class="list-group-item d-flex justify-content-between">
+    <span><strong>Parking Lot:</strong></span>
+    <span>{{r.spot.lot.prime_location_name}}</span>
+</li>
+<li style="border-color:#240345;color:white;background-color:#3B0571;" class="list-group-item d-flex justify-content-between">
+    <span><strong>Spot Details:</strong></span>
+    <span>#{{r.spot.spot_number}}
+        <span class="badge bg-secondary ms-1">Level {{r.spot.levels}}</span>
+        {%if r.spot.spacetype=='premium'%}<span class="badge bg-warning text-dark ms-1">Premium</span>{%endif%}
+        {%if r.spot.evsupport%}<span class="badge bg-info ms-1"><i class="bi bi-ev-station-fill"></i> EV</span>{%endif%}
+    </span>
+</li>
+<li style="border-color:#240345;color:white;background-color:#3B0571;" class="list-group-item d-flex justify-content-between">
+<span><strong>Booked On:</strong></span>
+<span>{{r.createat.strftime('%d-%b-%Y %H:%M')}}</span>
+</li>
+<li style="border-color:#240345;color:white;background-color:#3B0571;" class="list-group-item d-flex justify-content-between">
+<span><strong>Checked-in At:</strong></span>
+<span>{{r.parking_timestamp.strftime('%d-%b-%Y %H:%M') if r.parking_timestamp else 'Not Checked In'}}</span>
+</li>
+{%if r.durmin%}
+<li style="border-color:#240345;color:white;background-color:#3B0571;" class="list-group-item d-flex justify-content-between">
+<span><strong>Duration:</strong></span>
+<span>{{r.durmin}} minutes</span>
+</li>
+{%endif%}
+    {%if r.parking_cost%}
+    <li style="border-color:#240345;color:white;background-color:#3B0571;" class="list-group-item d-flex justify-content-between">
+        <span><strong>Cost:</strong></span>
+        <span class="text-success">₹{{"%.2f"|format(r.parking_cost)}}</span>
+    </li>
+    {%endif%}
+                </ul>
+            </div>
+
+            <div class="col-md-5">
+                <center>
+                    <p class="lead">Scan QR Code at Entry</p>
+                    {%if r.qrcode%}
+                        <img alt="QR Code" src="{{url_for('static', filename=r.qrcode)}}" class="mb-3 img-fluid" style="max-width: 200px; border: 4px solid #3B0571; border-radius: 8px;">
+                    {%else%}
+                        <div class="mb-3 p-4" style="border: 2px dashed #3B0571; border-radius: 8px;">
+                            <i class="bi bi-qr-code display-4 text-muted"></i>
+                            <p class="text-muted mt-2">QR Code not available</p>
+                            {%if r.reservestatus == 'active'%}
+                                <a href="{{url_for('user.generate_qr', rid=r.id)}}" class="btn btn-sm btn-primary">
+                                    <i class="bi bi-qr-code"></i> Generate QR Code
+                                </a>
+                            {%endif%}
+                        </div>
+                    {%endif%}
+                    <div class="mb-3">
+                        {%if r.reservestatus=='active' and not r.parking_timestamp%}
+                            <span class="badge bg-warning fs-6">Booked - Not Checked In</span>
+                        {%elif r.reservestatus=='active' and r.parking_timestamp%}
+                            <span class="badge bg-success fs-6">Currently Parked</span>
+                        {%elif r.reservestatus=='completed'%}
+                            <span class="badge bg-primary fs-6">Completed</span>
+                        {%else%}
+                            <span class="badge bg-secondary fs-6">{{r.reservestatus|title}}</span>
+                        {%endif%}
+                    </div>
+                </center>
+            </div>
+        </div>
+    </div>
+    
+    <div class="card-footer text-center" style="background-color:#3B0571; border-top: 1px solid #240345;">
+        {%if r.reservestatus=='active'%}
+            {%if not r.parking_timestamp%}
+<form method="POST" action="{{url_for('user.check_in', rid=r.id)}}" class="d-inline me-2">
+<button class="btn btn-success" type="submit"><i class="bi bi-play-circle"></i> Check In & Start Parking</button>
+</form>
+<form class="d-inline" method="POST" action="{{url_for('user.cancel_reservation', rid=r.id)}}" onsubmit="return confirm('Are you sure you want to cancel this reservation?');">
+<button type="submit"class="btn btn-danger"><i class="bi bi-x-circle"></i> Cancel Booking</button>
+</form>
+            {%else%}
+<form class="d-inline me-2" action="{{url_for('user.check_out', rid=r.id)}}"method="POST">
+<button class="btn btn-warning" type="submit"><i class="bi bi-stop-circle"></i> Release Spot & Exit</button>
+</form>
+            {%endif%}
+        {%elif r.reservestatus=='completed' and r.pstatus=='pending'%}
+<a class="btn btn-success me-2" href="{{url_for('user.pay_for_reservation', reservation_id=r.id)}}"><i class="bi bi-credit-card"></i> Pay Now</a>
+        {%elif r.reservestatus=='completed' and r.pstatus=='paid'%}
+            {%if r.payment%}<a class="btn btn-info me-2" href="{{url_for('user.receipt', reservation_id=r.id)}}"><i class="bi bi-receipt"></i> View Receipt</a>{%endif%}
+            {%set er = r.spot.lot.reviews|selectattr('uid', 'equalto', session.uid)|first%}
+            {%if not er%}
+            <button data-bs-target="#rf" data-bs-toggle="collapse" class="btn btn-warning me-2" type="button"><i class="bi bi-star"></i> Leave a Review</button>
+<div class="collapse mt-3" id="rf">
+<div class="card" style="background-color: #240345;">
+<div class="card-body text-start">
+<h6>Rate Your Parking Experience</h6>
+<form action="{{url_for('user.submit_review', reservation_id=r.id)}}" method="POST">
+<div class="mb-3">
+<label class="form-label">Rating</label>
+<div class="btn-group d-block" role="group">
+    {% for i in range(1, 6) %}
+<input type="radio" value="{{i}}" class="btn-check" name="rating" id="rt_{{i}}" required>
+<label for="rt_{{i}}" class="btn btn-outline-warning">{{i}} ⭐</label>
+    {% endfor %}
+</div>
+</div>
+<div class="mb-3">
+<label class="form-label">Comment (Optional)</label>
+<textarea placeholder="Tell us about your parking experience..." rows="3" class="form-control" name="comment" style="background-color:#3B0571;color:white;border-color:#240345;"></textarea>
+</div>
+<button type="submit" class="btn btn-warning">Submit Review</button>
+<button data-bs-target="#rf" data-bs-toggle="collapse" class="btn btn-secondary" type="button">Cancel</button>
+</form>
+</div>
+</div>
+</div>
+            {%else%}
+<div class="alert alert-success" style="background-color: #198754; color: white; border: 0;">
+<i class="bi bi-check-circle"></i> You have already reviewed this parking lot ({{er.rating}}⭐)
+</div>
+            {%endif%}
+        {%endif%}
+        <a class="btn btn-outline-light" href="{{url_for('user.my_parkings')}}"><i class="bi bi-arrow-left"></i> Back to My Parkings</a>
+    </div>
+</div>
+</div>
+</div>
+{%endblock%}

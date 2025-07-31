@@ -1,0 +1,296 @@
+{%extends "base_layout.html"%}
+{%block title%}My Parkings{%endblock%}
+{%block content%}
+<div class="mt-4">
+    <h1 class="text-center mb-4"><span style="font-weight:bold;">My Parking History</span></h1>
+    
+    <!-- Summary Statistics -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card text-white" style="background-color:#5A0075;border-radius:20px">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Total Spent</h5>
+                    <p class="card-text fs-2">₹{{"{:.2f}".format(total_spent or 0)}}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-white" style="background-color:#A000D1;border-radius:20px">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Total Bookings</h5>
+                    <p class="card-text fs-2">{{total_reservations or 0}}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-white" style="background-color:#CE2EFF;border-radius:20px">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Completed</h5>
+                    <p class="card-text fs-2">{{completed_reservations or 0}}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Section -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card" style="background-color:#2C2533;border-radius:20px;">
+                <div class="card-header text-center" style="color:white;font-weight:bold;">
+                    Monthly Spending
+                </div>
+                <div class="card-body">
+                    <canvas id="spendingChart"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card" style="background-color:#2C2533;border-radius:20px;">
+                <div class="card-header text-center" style="color:white;font-weight:bold;">
+                    Monthly Bookings
+                </div>
+                <div class="card-body">
+                    <canvas id="bookingsChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    {%if reservations%}
+        {%for r in reservations%}
+        <div class="card mb-4"style="color:white;background-color:#240345;">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-8">
+                        {%if r.spot and r.spot.lot%}
+                            <h2 style="border-radius:20px;border-color:gray;border-width:1px;border-style:solid; padding:10px;"class="mb-4">{{r.spot.lot.prime_location_name}}</h2>
+                            <div style="border-style:solid; border-color:gray;border-width:1px;padding:10px;border-radius:20px;"><p >{{r.spot.lot.address}}</p>
+                            <p><span style="font-weight:bold;">Spot:</span> # {{r.spot.spot_number}} ({{r.spot.levels}})</p>
+                        {%else%}
+                            <h5 class="text-danger">Parking Lot Deleted</h5>
+                            <p >This parking lot is no longer available</p>
+                            <p><span style="font-weight:bold;">Spot:</span> N/A</p>
+                        {%endif%}
+                        <p><span style="font-weight:bold;">Vehicle:</span> {{r.vno}}</p>
+                        {%if r.parking_timestamp%}
+                        <p><span style="font-weight:bold;">Parked:</span> {{r.parking_timestamp.strftime('%d %b %Y %H:%M')}}</p>
+                        {%endif%} 
+                        {%if r.leaving_timestamp%}
+                        <p><span style="font-weight:bold;">Left:</span> {{r.leaving_timestamp.strftime('%d %b %Y %H:%M')}}</p>
+                        {%endif%}
+                        </div>
+                    </div>
+                    <div class="col-md-4 text-end mt-3">
+                        {%if r.reservestatus=='completed'%}
+                        <span class=" bg-success badge">
+                            {{r.reservestatus.title()}}
+                        </span>
+                        {%elif r.reservestatus=='active'%}
+                        <span class="badge bg-primary">
+                            {{r.reservestatus.title()}}
+                        </span>
+                        {%else%}
+                        <span class="bg-secondary badge">
+                            {{r.reservestatus.title()}}
+                        </span>
+                        {%endif%}
+                        {%if r.parking_cost%}
+                            <p class="mt-3"><span style="font-weight:bold;">Cost:</span> ₹{{"%.2f"|format(r.parking_cost)}}</p>
+                        {%endif%}
+                        {%if r.pstatus and r.reservestatus !='cancelled'%}
+                        {%if r.pstatus=='paid'%}
+                            <span class=" bg-success badge">
+                                {{r.pstatus.title()}}
+                            </span   >
+                        {%else%}
+                            <span class="badge bg-warning " >
+                                Payment {{r.pstatus.title()}}
+                            </span   >
+                        {%endif%}
+                        {%endif%}
+                    </div>
+                </div>
+                
+                <div class="mt-3">
+                    {%if r.spot and r.spot.lot%}
+                        {%if r.reservestatus=='active'%}
+                            {%if not r.parking_timestamp%}
+                                <a href="{{url_for('user.reservation_details',rid=r.id)}}"
+                                   class="btn btn-info btn-sm me-2">
+                                    <i class="bi bi-eye"></i> View Details
+                                </a>
+                                <form action="{{url_for('user.check_in',rid=r.id)}}"
+                                      method="POST"class="d-inline me-2">
+                                    <button type="submit"class="btn btn-success btn-sm">
+                                        <i class="bi-play-circle bi "></i> Check In
+                                    </button>
+                                </form>
+                                <form action="{{url_for('user.cancel_reservation',rid=r.id)}}"
+                                      method="POST"class="d-inline"
+                                      onsubmit="return confirm('Are you sure you want to cancel this reservation?');">
+                                    <button type="submit"class="btn btn-danger btn-sm">
+                                        <i class=" bi-x-circle bi"></i> Cancel
+                                    </button>
+                                </form>
+                            {%else%}
+                                <a href="{{url_for('user.reservation_details',rid=r.id)}}"
+                                   class="btn-sm btn btn-info me-2">
+                                    <i class="bi bi-eye"></i> View Details
+                                </a>
+                                <form action="{{url_for('user.check_out',rid=r.id)}}"
+                                      method="POST"class="d-inline">
+                                    <button type="submit"class="btn-warning btn-sm btn ">
+                                        <i class="bi-stop-circle  bi"></i> Release Spot
+                                    </button>
+                                </form>
+                            {%endif%}
+                        {%elif r.reservestatus=='completed'%}
+                            <a href="{{url_for('user.reservation_details',rid=r.id)}}"
+                               class="btn btn-info btn-sm me-2">
+                                <i class="bi bi-eye"></i> View Details
+                            </a>
+                            {%if r.pstatus=='pending'%}
+                                <a href="{{url_for('user.pay_for_reservation',reservation_id=r.id)}}"
+                                   class="btn btn-success btn-sm me-2">
+                                    <i class=" bi-credit-card bi"></i> Pay Now (₹{{"%.2f"|format(r.parking_cost)}})
+                                </a>
+                            {%elif r.pstatus=='paid'%}
+                                <a href="{{url_for('user.receipt',reservation_id=r.id)}}"
+                                   class="btn btn-outline-success btn-sm">
+                                    <i class="bi bi-receipt"></i> View Receipt
+                                </a>
+                            {%endif%}
+                        {%endif%}
+                    {%else%}
+                        <span >Parking lot no longer available</span>
+                    {%endif%}
+                </div>
+                
+                {%if r.reservestatus=='completed'and r.pstatus=='paid'and r.spot and r.spot.lot%}
+                    {%set er = r.spot.lot.reviews|selectattr('uid','equalto',session.uid)|first%}
+                    {%if not er%}
+                    <div class="border-top pt-3 mt-3 ">
+                        <button class="btn-outline-warning btn  btn-sm"type="button"data-bs-toggle="collapse"
+                                data-bs-target="#rf{{r.id}}">
+                            <i class="bi bi-star"></i> Leave a Review
+                        </button>
+                        <div class=" mt-2 collapse"id="rf{{r.id}}">
+                            <form action="{{url_for('user.submit_review',reservation_id=r.id)}}"method="POST">
+                                <div class="mb-2">
+                                    <label class="form-label">Rating</label>
+                                    <div class="btn-group"role="group">
+                                        {%for i in range(1,6)%}
+                                        <input type="radio"class="btn-check"name="rating"id="rt{{r.id}}_{{i}}"value="{{i}}"required>
+                                        <label class="btn-outline-warning btn-sm btn "for="rt{{r.id}}_{{i}}">{{i}} ⭐</label>
+                                        {%endfor%}
+                                    </div>
+                                </div>
+                                <div class="mb-2">
+                                    <textarea name="comment"class=" form-control-sm form-control"rows="2"placeholder="Share your experience"></textarea>
+                                </div>
+                                <button type="submit"class=" btn-sm btn btn-warning">Submit Review</button>
+                            </form>
+                        </div>
+                    </div>
+                    {%else%}
+                    <div class=" pt-3 mt-2 border-top">
+                        <small class="text-success">
+                            <i class=" bi-check-circle bi"></i> You reviewed this lot ({{er.rating}}⭐)
+                        </small>
+                    </div>
+                    {%endif%}
+                {%endif%}
+            </div>
+        </div>
+        {%endfor%}
+    {%else%}
+        <div class="text-center py-5">
+            <i class="bi-car-front display-1 bi"></i>
+            <h4 >No Parking History</h4>
+            <p >Your parking reservations will appear here.</p>
+            <a href="{{url_for('user.dashboard')}}"class="btn btn-primary">Find Parking</a>
+        </div>
+    {%endif%}
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const chartData = {{chart_data | tojson}};
+
+    // Spending Chart
+    const spendingCtx = document.getElementById('spendingChart').getContext('2d');
+    const spendingChart = new Chart(spendingCtx, {
+        type: 'line',
+        data: {
+            labels: chartData.months,
+            datasets: [{
+                label: 'Amount Spent (₹)',
+                data: chartData.spending,
+                backgroundColor: 'rgba(0, 162, 255, 0.2)',
+                borderColor: '#00A2FF',
+                borderWidth: 2,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                x: {
+                    ticks: { color: 'white' },
+                    grid: { color: 'gray' }
+                },
+                y: {
+                    beginAtZero: true,
+                    ticks: { color: 'white' },
+                    grid: { color: 'gray' }
+                }
+            },
+            plugins: {
+                legend: {
+                    labels: { color: 'white' }
+                }
+            }
+        }
+    });
+
+    // Bookings Chart
+    const bookingsCtx = document.getElementById('bookingsChart').getContext('2d');
+    const bookingsChart = new Chart(bookingsCtx, {
+        type: 'bar',
+        data: {
+            labels: chartData.months,
+            datasets: [{
+                label: 'Number of Bookings',
+                data: chartData.counts,
+                backgroundColor: '#CE2EFF',
+                borderColor: '#A000D1',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                x: {
+                    ticks: { color: 'white' },
+                    grid: { color: 'gray' }
+                },
+                y: {
+                    beginAtZero: true,
+                    ticks: { 
+                        stepSize: 1,
+                        color: 'white' 
+                    },
+                    grid: { color: 'gray' }
+                }
+            },
+            plugins: {
+                legend: {
+                    labels: { color: 'white' }
+                }
+            }
+        }
+    });
+</script>
+{%endblock%}
