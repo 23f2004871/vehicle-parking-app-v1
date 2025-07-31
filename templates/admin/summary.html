@@ -1,0 +1,204 @@
+{% extends "admin/admin_layout.html" %}
+
+{% block title %}System Summary{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between text-center mb-4">
+    <h2>System Summary</h2>
+</div>
+
+<div class="row">
+    <div class=" mb-4  col-md-4">
+        <div class="card text-white " style="border-radius:20px">
+            <div class="card-body" style="background-color:#5A0075;border-radius:20px">
+                <h5 class="card-title">Total Revenue</h5>
+                <p class="card-text fs-2">₹{{tr}}</p>
+            </div>
+        </div>
+    </div>
+
+    <div class=" mb-4 col-md-4">
+        <div class="card text-white" style="border-radius:20px">
+            <div class="card-body" style="background-color:#A000D1;border-radius:20px">
+                <h5 class="card-title">Total Parking Lots</h5>
+                <p class="card-text fs-2"><small>{{tl}}</small></p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4 mb-4">
+        <div class="card text-white" style="border-radius:20px">
+            <div style="background-color:#CE2EFF;border-radius:20px" class="card-body">
+                <h5 class="card-title">Total Users</h5>
+                <p class="card-text fs-2">{{tu}}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card" style="background-color:#2C2533;border-radius:50px;">
+    <div style="color:white;font-weight:bold;" class="card-header text-center">
+        Reservations in the Last 7 Days
+    </div>
+    <div class="card-body">
+        <canvas id="rc"></canvas>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    const cd = {{cd | tojson}};
+
+    const ctx = document.getElementById('rc').getContext('2d');
+    const rc = new Chart(ctx, {
+        type:'bar',
+        data:{
+            labels:cd.labels,
+            datasets:[{
+                label:'# of Reservations',
+                data:cd.data,
+                backgroundColor:'#00A2FF',
+                borderColor:'rgba(54, 162, 235, 1)',
+                borderWidth:1
+           }]
+       },
+        options:{
+            scales:{
+                x:{
+                    ticks:{
+                        color:'white'
+                   },
+                    grid:{
+                        color:'gray'
+                   }
+               },
+                y:{
+                    beginAtZero:true,
+                    ticks:{
+                        stepSize:1,
+                        color:'white'
+                   },
+                    grid:{
+                        color:'gray'
+                   }
+               }
+           },
+            plugins:{
+                legend:{
+                    labels:{
+                        color:'white'
+                   }
+               }
+           },
+            responsive:true,
+            maintainAspectRatio:false
+       }
+   });
+</script>
+<style>
+    .table td,.table th{
+        color:white;
+        background-color:#2C2533;
+   }
+   .table th{
+    font-size: larger;
+   }
+</style>
+
+<div class="row mt-4 mb-4">
+    <div class="col-12">
+        <div class="card" style="color:white;background-color:#2C2533;border-radius:50px;">
+            <div class="card-header" style="color:white;font-weight:bold;">
+                <h5 class="mb-0 text-center">Recent Reservations</h5>
+            </div>
+            <div class="card-body">
+                {% if rr %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th >ID</th>
+                                <th >User</th>
+                                <th >Lot</th>
+                                <th >Spot</th>
+                                <th >Vehicle</th>
+                                <th >Parked On</th>
+                                <th >Left On</th>
+                                <th >Status</th>
+                                <th >Cost</th>
+                            </tr>
+                        </thead>
+                        <tbody s>
+                            {% for res in rr %}
+                            <tr>
+                                <td >{{res.id}}</td>
+                                <td >{{res.user.full_name}}</td>
+                                <td >
+                                    {% if res.spot and res.spot.lot %}
+                                    {{res.spot.lot.prime_location_name}}
+                                    {% else %}
+                                    <span class="text-danger">Deleted Lot</span>
+                                    {% endif %}
+                                </td>
+                                <td >
+                                    {% if res.spot %}
+                                    #{{res.spot.spot_number}}
+                                    {% else %}
+                                    <span class="">N/A</span>
+                                    {% endif %}
+                                </td>
+                                <td >{{res.vno}}</td>
+                                <td >
+                                    {% if res.parking_timestamp %}
+                                    {{res.parking_timestamp.strftime('%d-%b %H:%M')}}
+                                    {% else %}
+                                    <span class="">Not checked in</span>
+                                    {% endif %}
+                                </td>
+                                <td >
+                                    {% if res.leaving_timestamp %}
+                                    {{res.leaving_timestamp.strftime('%d-%b %H:%M')}}
+                                    {% else %}
+                                    <span class="">Not checked in</span>
+                                    {% endif %}
+                                </td>
+                                <td >
+                                    {% if res.reservestatus == 'active' and not res.parking_timestamp %}
+                                    <span class="badge bg-warning">Booked</span>
+                                    {% elif res.reservestatus == 'active' and res.parking_timestamp %}
+                                    <span class="badge bg-success">Parked</span>
+                                    {% elif res.reservestatus == 'completed' %}
+                                    <span class="badge bg-primary">Completed</span>
+                                    {% else %}
+                                    <span class="badge bg-secondary">{{res.reservestatus|title}}</span>
+                                    {% endif %}
+                                </td>
+                                <td >
+                                    {% if res.parking_cost %}
+                                    ₹{{"%.2f"|format(res.parking_cost)}}
+                                    {% else %}
+                                    <span class="">-</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="text-center mt-3">
+                    <a href="{{url_for('admin.view_reservations')}}" class="btn btn-outline-primary">
+                        View All Reservations
+                    </a>
+                </div>
+                {% else %}
+                <div class="text-center  py-4">
+                    <i class="bi bi-inbox display-4"></i>
+                    <p class="mt-2">No recent reservations found.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

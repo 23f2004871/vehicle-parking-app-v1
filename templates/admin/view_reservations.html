@@ -1,0 +1,82 @@
+{% extends "admin/admin_layout.html" %}
+
+{% block title %}All Reservations{% endblock %}
+
+{% block content %}
+<div class="text-center mb-5">
+    <h2>All Parking Reservations</h2>
+</div>
+
+<div class="card"style="color:white;background-color:#2C2533;border-radius: 50px;border-radius-bottom: 50px;">
+    <div class="card-body">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th style="color:white;background-color:#2C2533;">Res. ID</th>
+                    <th style="color:white;background-color:#2C2533;">User</th>
+                    <th style="color:white;background-color:#2C2533;">Lot Name</th>
+                    <th style="color:white;background-color:#2C2533;">Spot No</th>
+                    <th style="color:white;background-color:#2C2533;">Vehicle No</th>
+                    <th style="color:white;background-color:#2C2533;">Parking Time</th>
+                    <th style="color:white;background-color:#2C2533;">Leaving Time</th>
+                    <th style="color:white;background-color:#2C2533;">Cost</th>
+                    <th style="color:white;background-color:#2C2533;">Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for rs in reservations %}
+                <tr>
+                    <td style="color:white;background-color:#2C2533;">{{ rs.id }}</td>
+                    <td style="color:white;background-color:#2C2533;">{{ rs.user.full_name }}</td>
+                    <td style="color:white;background-color:#2C2533;">
+                        {% if rs.spot and rs.spot.lot %}
+                            {{ rs.spot.lot.prime_location_name }}
+                        {% else %}
+                            <span class="text-danger">Deleted Lot</span>
+                        {% endif %}
+                    </td>
+                    <td style="color:white;background-color:#2C2533;">
+                        {% if rs.spot %}
+                            #{{ rs.spot.spot_number }}
+                        {% else %}
+                            <span class="text-muted">N/A</span>
+                        {% endif %}
+                    </td>
+                    <td style="color:white;background-color:#2C2533;">{{ rs.vno }}</td>
+                    <td style="color:white;background-color:#2C2533;">
+                        {% if rs.parking_timestamp %}
+                            {{ rs.parking_timestamp.strftime('%d-%b-%Y %H:%M') }}
+                        {% else %}
+                            <span class="text-muted">Not checked in</span>
+                        {% endif %}
+                    </td>
+                    <td style="color:white;background-color:#2C2533;">
+                        {% if rs.leaving_timestamp %}
+                            {{ rs.leaving_timestamp.strftime('%d-%b-%Y %H:%M') }}
+                        {% else %}
+                            <span class="text-muted">-</span>
+                        {% endif %}
+                    </td>
+                    <td style="color:white;background-color:#2C2533;">
+                        {% if rs.parking_cost %}
+                            ₹{{ "%.2f"|format(rs.parking_cost) }}
+                        {% else %}
+                            <span class="text-muted">-</span>
+                        {% endif %}
+                    </td>
+                    <td style="color:white;background-color:#2C2533;">
+                        <span class="badge bg-{{ 'success' if rs.reservestatus == 'completed' else 'primary' if rs.reservestatus == 'active' else 'secondary' }}">
+                            {{ rs.reservestatus|title }}
+                        </span>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td style="color:white;background-color:#2C2533;" colspan="9" class="text-center">There are no reservations in the system yet.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

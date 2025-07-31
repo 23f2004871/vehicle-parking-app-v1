@@ -1,0 +1,109 @@
+
+{%extends "admin/admin_layout.html"%}
+
+{%block title%}All Prarking lots{%endblock%} 
+
+{%block content%}
+<div class="d-flex justify-content-between"style="text-align:center;">
+    <div style="align-items: center;"><h2>Parking Lots Management</h2></div>
+    
+    <div>
+        <a href="{{url_for('admin.add_lot')}}"class="btn btn-success"style="font-weight:bold;background-color:blueviolet">
+            Add New Lot
+        </a>
+            
+        </div>
+    </div>
+</div>
+
+<style>
+    .table td,.table th{
+        color:white;
+        background-color:#2C2533;
+   }
+   .table th{
+    font-size: larger;
+   }
+</style>
+
+<div class="card mb-5"style="background-color:#eabfff;border-width:0px;border-color:#eabfff;">
+    <div class="card-body"style="background-color:#eabfff;">
+        <form method="GET"action="{{url_for('admin.admin_dashboard')}}">
+            <div class="input-group">
+                <input type="text"style="color:white;background-color:#2C2533;"class="form-control"name="q"value="{{q or ''}}">
+                <button class="btn btn-secondary"style="font-weight:bold;border-color:#eabfff;border-left-width:4px;"type="submit">Search Parking</button>
+            </div>
+        </form>
+    </div>
+</div>
+<div class="card"style="color:white;background-color:#2C2533;border-radius: 50px;">
+            <div class="card-header"style="color:white;font-weight:bold;">
+                <h5 class="mb-0 text-center">Parking Lots</h5>
+            </div>
+            <div class="card-body">
+<div class="table-responsive"style="background-color:#2C2533;border-radius: 50px;">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th ></th>
+                        <th style="color:white;background-color:#2C2533;"style="text-align: center;">ID</th>
+                        <th >Location Name</th>
+                        <th style="color:white;background-color:#2C2533;"style="text-align: center;">Address</th>
+                        <th >Price/hr</th>
+                        <th >Hours</th>
+                        <th >Total Spots</th>
+                        <th >Rating</th>
+                        <th style="color:white;background-color:#2C2533;"style="text-align: center;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {%for l in lots%}
+                    <tr>
+                        <td ></td>
+                        <td >{{l.id}}</td>
+                        <td style="color:white;background-color:#2C2533;font-weight:bold;">{{l.prime_location_name}}</td>
+                        <td >
+                            <small>{{l.address}},{{l.city}} - {{l.pin_code}}</small>
+                        </td>
+                        <td ><strong style="color:green;">₹{{l.price}}</strong></td>
+                        <td >
+                            {%if l.opening and l.closing%}
+                                <small>{{l.opening.strftime('%H:%M')}}  to {{l.closing.strftime('%H:%M')}}</small>
+                            {%else%}
+                                <span>24/7</span>
+                            {%endif%}
+                        </td>
+                        <td >{{l.maximum_number_of_spots}}</td>
+                        <td >
+                            {%if l.ratings and l.ratings > 0%}
+                                <span class="badge bg-warning text-dark">⭐ {{'%.1f'|format(l.ratings)}}</span>
+                            {%else%}
+                                <span class="">No ratings</span>
+                            {%endif%}
+                        </td>
+                        <td>
+                            <a href="{{ url_for('admin.view_spots', lid=l.id) }}"class="btn btn-sm btn-info "style="border-width:0px;color:white;background-color:#5B086D;">View</a>
+                            <a href="{{ url_for('admin.manage_spots', lid=l.id) }}"style="border-width:0px;color:white;background-color:#5F0571;"class="btn btn-sm  btn-success">Manage</a>
+                            <a href="{{ url_for('admin.edit_lot', lid=l.id) }}"style="border-width:0px;color:white;background-color:#7C0694;"class="btn btn-sm btn-warning">Edit</a>
+                            <form action="{{ url_for('admin.delete_lot', lid=l.id) }}"method="POST"class="d-inline"
+                                  onsubmit="return confirm('Are you sure about deleting this parking lot?')">
+                                <button type="submit"class="btn btn-sm btn-danger"style="border-width:0px;color:white;background-color:#A908C9;">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {%else%}
+                    <tr>
+                        <td colspan="8"class="text-center">No parking lots found. <a href="{{url_for('admin.add_lot')}}">Add New Parking Lot</a></td>
+                    </tr>
+                    {%endfor%}
+                </tbody>
+            </table>
+            </div>
+        </div>
+    </div>
+</div>
+{%endblock%}
+
+
+
+

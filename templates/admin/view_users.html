@@ -1,0 +1,84 @@
+{%extends "admin/admin_layout.html"%}
+
+{%block title%}View Users{%endblock%}
+
+{%block content%}
+<div class="text-center mb-5">
+    <h2>Registered Users</h2>
+</div>
+<style>
+    .table td,.table th{
+        color:white;
+        background-color:#2C2533;
+   }
+   .table th{
+    font-size: larger;
+   }
+</style>
+<div class="card"style="color:white;background-color:#2C2533;border-radius: 50px;">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                         <th >ID</th ><th >Full Name</th ><th >Username</th ><th >Phone</th ><th >Address</th ><th >Last Login</th ><th >Status</th ><th >Registered</th ><th >Actions</th >
+                    </tr>
+                </thead>
+                <tbody>
+                    {%for usr in users%}
+                    <tr>
+                         <td >{{usr.id-1}}</td>
+                         <td >
+                            <strong>{{usr.full_name}}</strong>
+                        </td>
+                         <td >
+                            {{usr.username}}
+                        </td>
+                         <td >{{usr.pno}}</td>
+                         <td >
+                            {%if usr.add%}{{usr.add[:30]}}{%if usr.add|length > 30%}...{%endif%}
+                            {%else%}N/A{%endif%}
+                        </td>
+                         <td >
+                            {%if usr.llgoin%}
+                                {{usr.llgoin.strftime('%d-%b-%Y')}} {{usr.llgoin.strftime('%H:%M')}}
+                            {%else%}
+                                Never
+                            {%endif%}
+                        </td>
+                         <td >
+                            {%if usr.active%}
+                                <span class="badge bg-success">Active</span>
+                            {%else%}
+                                <span class="badge bg-danger">Inactive</span>
+                            {%endif%}
+                        </td>
+                         <td >
+                           {{usr.creation.strftime('%d-%b-%Y')}}
+                        </td>
+                         <td >
+                            <div >
+                                <a href="{{url_for('admin.user_details',user_id=usr.id)}}"class="btn btn-info btn-sm" style="border-width:0px;color:white;background-color:#7C0694;">View</a>
+                                <form action="{{url_for('admin.toggle_user_active',user_id=usr.id)}}"method="POST"class="d-inline">
+                                    {%if usr.active%}
+                                        <button type="submit"class="btn btn-warning btn-sm"onclick="return confirm('Deactivate this user?')">Deactivate</button>
+                                    {%else%}
+                                        <button class="btn btn-success btn-sm"type="submit">Activate</button>
+                                    {%endif%}
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {%else%}
+                    <tr>
+                        <td colspan="9"class="text-center">No users have registered yet.</td>
+                    </tr>
+                    {%endfor%}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{%endblock%}
+
+

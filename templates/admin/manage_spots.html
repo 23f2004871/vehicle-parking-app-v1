@@ -1,0 +1,128 @@
+{% extends "admin/admin_layout.html" %}
+
+{% block title %}Manage Spots - {{lot.prime_location_name}}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 ">
+    <h2 style=""class="">Manage Spots: {{ lot.prime_location_name }}</h2>
+ <a href="{{ url_for('admin.view_spots', lid=lot.id) }}" class = 'btn btn-outline-light'>View All Spots</a>
+</div>
+
+<div class = "row">
+ <div class='col-md-6'>
+<div class="card mb-4" style="background-color:#2C2533; color:white; border-radius: 15px; border: 0;">
+             <div class="card-header" style = "background-color: #3a3142; border-bottom: 1px solid #4a4152;">
+                <h5 class="mb-0">Add New Spots</h5>
+            </div>
+            <div class = "card-body">
+                <form action="{{ url_for('admin.manage_spots', lid=lot.id) }}" method="POST">
+                    <input type="hidden" name = "action" value="add_spots">
+                    
+                    <div class="mb-3">
+                        <label class='form-label'>Number of Spots to Add</label>
+                        <input type="number" name="spots_to_add" class="form-control" min="1" max="50" required style="background-color: #3a3142; color: white; border-color: #4a4152;">
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="form-label">Level</label>
+                        <select name='level' class="form-control" required style="background-color: #3a3142; color: white; border-color: #4a4152;">
+                             {% for level in levels %}
+                            <option value="{{ level }}">{{ level }}</option>
+                            {% endfor %}
+                            <option value="B1">B1 (New Level)</option>
+                            <option value="B2">B2 (New Level)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Spot Type</label>
+                       <select name="spot_type" class="form-control" required style="background-color: #3a3142; color: white; border-color: #4a4152;">
+                            <option value = "standard">Standard (1.0x price)</option>
+                            <option value='premium'>Premium (1.5x price)</option>
+                            <option value="ev">EV Charging (1.25x price)</option>
+                        </select>
+                    </div>
+                    
+
+                    <button type="submit" class="btn btn-success">Add Spots</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card mb-4" style="background-color:#2C2533; border:0; color:white; border-radius: 15px;">
+           <div class="card-header" style="background-color: #3a3142; border-bottom: 1px solid #4a4152;">
+                <h5 class='mb-0'>Remove Spots</h5>
+            </div>
+           <div class="card-body">
+                <form action="{{ url_for('admin.manage_spots', lid=lot.id) }}" method = 'POST'>
+                    <input type="hidden" name="action" value = "remove_spots">
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Select Spots to Remove</label>
+                        <div style="max-height: 255px; overflow-y: auto; background-color: #1e1a24; padding: 15px; border-radius: 8px;">
+                             {% for spot in spots %}
+                            <div class="form-check">
+                             <input class="form-check-input" type="checkbox" name="spots_to_remove" value="{{ spot.id }}" id="spot_{{ spot.id }}" {% if spot.status == 'O' or spot.isreserved %}disabled{% endif %}>
+                                <label class="form-check-label" for="spot_{{ spot.id }}">
+                                    #{{ spot.spot_number }} ({{ spot.levels }}) - {{ spot.spacetype }}
+                                    {%if spot.status == 'O'%}
+                                        <span class="badge bg-danger">Occupied</span>
+                                    {% elif spot.isreserved %}
+                                        <span class='badge bg-warning text-dark'>Reserved</span>
+                                    {% else %}
+                                        <span class="badge bg-success">Available</span>
+                                    {% endif %}
+                                </label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-outline-danger" 
+                            onclick="return confirm('Are you sure you want to remove selected spots?')">
+                        Remove Selected Spots
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card mb-5" style="background-color:#2C2533; color:white; border-radius: 15px; border:0;">
+    <div class="card-header" style="background-color: #3a3142; border-bottom: 1px solid #4a4152;">
+        <h5 class="mb-0">Current Statistics</h5>
+    </div>
+    <div class="card-body">
+        <div class="row text-center">
+            
+            <div class="col-md-3">
+                 <div style="background-color:#3a3142; padding: 15px 20px; border-radius: 20px;">
+                    <h4 class="mb-0">{{ lot.maximum_number_of_spots}}</h4>
+                    <small style='color:#d0d0d0;'>Total Spots</small>
+                </div>
+            </div>
+          <div class="col-md-3">
+                <div style="background-color:#3a3142; padding: 15px 20px; border-radius: 20px;">
+                    <h4 class="mb-0 text-success">{{ spots|selectattr('status', 'equalto', 'A')|list|length }}</h4>
+                    <small class="text-white-50">Available</small>
+                </div>
+            </div>
+            <div class="col-md-3">
+               <div style="background-color:#3a3142; padding: 15px 20px; border-radius: 20px;">
+                    <h4 class="mb-0 text-danger">{{ spots|selectattr('status', 'equalto', 'O')|list|length }}</h4>
+                    <small style="color:#d0d0d0;">Occupied</small>
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <div style="background-color:#3a3142; padding: 15px 20px; border-radius: 20px;">
+                    <h4 class="mb-0 text-warning">{{ spots|selectattr('isreserved', 'equalto', true)|list|length }}</h4>
+                    <small class="text-white-50">Reserved</small>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

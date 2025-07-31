@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"content="width=device-width, initial-scale=1.0">
+    <title>{%block title%}Admin Page{%endblock%}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"rel="stylesheet">
+</head>
+
+<body style="background-color:#eabfff;">
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{{url_for('index')}}" style="font-weight:bold;font-size:30px;color:blueviolet;">Admin Panel</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#an">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse"id="an">
+                <ul class="navbar-nav me-auto mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link {%if request.endpoint=='admin.summary'%}active{%endif%}"
+                            href="{{url_for('admin.summary')}}">Summary</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {%if request.endpoint=='admin.admin_dashboard'%}active{%endif%}"
+                            href="{{url_for('admin.admin_dashboard')}}">Parking Lots</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {%if request.endpoint=='admin.view_users'%}active{%endif%}"
+                            href="{{url_for('admin.view_users')}}">View Users</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {%if request.endpoint=='admin.view_reservations'%}active{%endif%}"
+                            href="{{url_for('admin.view_reservations')}}">All Reservations</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link"href="{{url_for('admin.view_reviews')}}">Reviews
+                        </a>
+                    </li>
+                </ul>
+                <div><a class="btn btn-outline-light btn-sm"href="{{url_for('auth.logout')}}">Logout</a></div>
+                
+            </div>
+        </div>
+    </nav>
+
+    <main class="container mt-4">
+        {%block content%}{%endblock%}
+    </main>
+
+    <div class="toast-container position-fixed bottom-0 end-0 p-3" id="tc"></div>
+
+    <div id="fm" style="display: none;">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="fm" data-category="{{ category }}" data-message="{{ message }}"></div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const tc = document.getElementById('tc');
+            const msgs = document.querySelectorAll('.fm');
+
+            msgs.forEach(me => {
+                const msg = me.dataset.message;
+                const cat = me.dataset.category;
+
+                const bgc = {
+                    'success': 'bg-success',
+                    'danger': 'bg-danger', 
+                    'warning': 'bg-warning',
+                    'info': 'bg-info'
+                }[cat] || 'bg-secondary';
+
+                const th = `
+                    <div class="toast align-items-center text-white ${bgc} border-0" role="alert" aria-live="assertive" aria-atomic="true">
+                        <div class="d-flex">
+                            <div class="toast-body">
+                                ${msg}
+                            </div>
+                            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                        </div>
+                    </div>
+                `;
+                
+                tc.insertAdjacentHTML('beforeend', th);
+                
+                const nt = tc.lastElementChild;
+                const t = new bootstrap.Toast(nt, { delay: 5000 });
+                t.show();
+            });
+        });
+    </script>
+</body>
+
+</html>

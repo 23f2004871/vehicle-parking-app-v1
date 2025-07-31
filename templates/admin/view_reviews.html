@@ -1,0 +1,88 @@
+{% extends "admin/admin_layout.html" %}
+{% block title %}All Reviews{% endblock %}
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Customer Reviews</h2>
+    <div class="d-flex gap-3">
+        <div style="color:white;background-color:#2C2533;border-radius: 50px;border-radius-bottom: 50px;"class="card text-center">
+            <div class="card-body py-2">
+                <h5 class="mb-0">{{ total_reviews }}</h5>
+                <small style="color:white;">Total Reviews</small>
+            </div>
+        </div>
+        <div class="card text-center"style="color:white;background-color:#2C2533;border-radius: 50px;border-radius-bottom: 50px;">
+            <div class="card-body py-2">
+                <h5 class="mb-0">{{ "%.1f"|format(avg_rating) }}⭐</h5>
+                <small style="color:white;">Average Rating</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card"style="color:white;background-color:#2C2533;border-radius: 50px;border-radius-bottom: 50px;">
+    <div class="card-body">
+        {% if reviews %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th style="color:white;background-color:#2C2533;">Date</th>
+                        <th style="color:white;background-color:#2C2533;">Customer</th>
+                        <th style="color:white;background-color:#2C2533;">Parking Lot</th>
+                        <th style="color:white;background-color:#2C2533;">Rating</th>
+                        <th style="color:white;background-color:#2C2533;">Comment</th>
+                        <th style="color:white;background-color:#2C2533;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for rv in reviews %}
+                    <tr>
+                        <td style="color:white;background-color:#2C2533;">{{ rv.timestamp.strftime('%d-%b-%Y %H:%M') }}</td>
+                        <td style="color:white;background-color:#2C2533;">{{ rv.user.full_name }}</td>
+                        <td style="color:white;background-color:#2C2533;">
+                            <a href="{{ url_for('admin.lot_reviews', lot_id=rv.lid) }}" 
+                               class="text-decoration-none">
+                                {{ rv.lot.prime_location_name }}
+                            </a>
+                        </td>
+                        <td style="color:white;background-color:#2C2533;">
+                            <span class="badge bg-warning text-dark">
+                                {{ rv.rating }}⭐
+                            </span>
+                        </td>
+                        <td style="color:white;background-color:#2C2533;">
+                            {% if rv.comment %}
+                                <span class="text-truncate d-inline-block" style="max-width: 200px;" 
+                                      title="{{ rv.comment }}">
+                                    {{ rv.comment }}
+                                </span>
+                            {% else %}
+                                <em class="">No comment</em>
+                            {% endif %}
+                        </td>
+                        <td style="color:white;background-color:#2C2533;">
+                            <a href="{{ url_for('admin.lot_reviews', lot_id=rv.lid) }}" 
+                               class="btn btn-sm btn-outline-primary">
+                                View All for Lot
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-4">
+            <i class="bi bi-star display-1 "></i>
+            <h4 class="">No Reviews Yet</h4>
+            <p class="">Customer reviews will appear here once they start rating parking lots.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+
+
+

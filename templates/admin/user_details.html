@@ -1,0 +1,139 @@
+{%extends "admin/admin_layout.html"%}
+{%block title%}User Details - {{u.full_name}}{%endblock%}
+{%block content%}
+<style>
+    .table td{
+        color:white;
+        background-color:#2C2533;
+   }
+</style>
+<div class="row">
+    <div class="col-md-8">
+        <div class="card"style="color:white;background-color:#2C2533;">
+            <div class="card-header text-center">
+                <h4>User Profile: {{u.full_name}}</h4>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-8">
+                        <h5>Personal Information</h5>
+                        <table class="table table-borderless">
+                            <tr>
+                                <td><strong>User ID:</strong></td>
+                                <td>{{u.id-1}}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Full Name:</strong></td>
+                                <td>{{u.full_name or 'Not provided'}}</td>
+                            </tr>
+                            
+                            <tr>
+                                <td><strong>Email:</strong></td>
+                                <td>{{u.email or 'Not provided'}}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Phone:</strong></td>
+                                <td>{{u.pno or 'Not provided'}}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Address:</strong></td>
+                                <td>{{u.add or 'Not provided'}}</td>
+                            </tr>
+                        </table>
+                    </div>
+                    
+                    <div class="col-md-8">
+                        <h5>Account Information</h5>
+                        <table class="table table-borderless">
+                            <tr>
+                                <td><strong>Role:</strong></td>
+                                <td>
+                                    <span class="badge bg-primary">{{u.role.title()}}</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>Status:</strong></td>
+                                <td>
+                                    {%if u.active%}
+                                        <span class="badge bg-success ">Active</span>
+                                    {%else%}
+                                        <span class="badge bg-danger">Inactive</span>
+                                    {%endif%}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>Registered:</strong></td>
+                                <td>{{u.creation.strftime('%d %B %Y at %H:%M')}}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Last Updated:</strong></td>
+                                <td>{{u.updation.strftime('%d %B %Y at %H:%M')}}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Last Login:</strong></td>
+                                <td>
+                                    {%if u.llgoin%}
+                                        {{u.llgoin.strftime('%d %B %Y at %H:%M')}}
+                                    {%else%}
+                                        <span class="text-muted">Never logged in</span>
+                                    {%endif%}
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div style="color:white;background-color:#2C2533;"class="card">
+            <div class="card-header">
+                <h5>Quick Stats</h5>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-12 mb-3">
+                        <h3 class="text-primary">{{u.reservations|length}}</h3>
+                        <small style="color:white;">Total Reservations</small>
+                    </div>
+                    <div class="col-12 mb-3">
+                        <h3 class="text-success">{{u.vehicles|length}}</h3>
+                        <small style="color:white;">Registered Vehicles</small>
+                    </div>
+                    <div class="col-12 mb-3">
+                        <h3 class="text-warning">{{u.reviews|length}}</h3>
+                        <small style="color:white;">Reviews Written</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card mt-3"style="color:white;background-color:#2C2533;">
+            <div class="card-header">
+                <h5>Admin Actions</h5>
+            </div>
+            <div class="card-body">
+                <form action="{{url_for('admin.toggle_user_active', user_id=u.id)}}" method="POST">
+                    {%if u.active%}
+                        <button type="submit" class="btn btn-warning w-100 mb-2" onclick="return confirm('Deactivate this user account?')">
+                            <i class="bi bi-pause-circle"></i> Deactivate Account
+                        </button>
+                    {%else%}
+                        <button type="submit" class="btn btn-success w-100 mb-2">
+                            <i class="bi bi-play-circle"></i> Activate Account
+                        </button>
+                    {%endif%}
+                </form>
+                <a href="{{url_for('admin.view_users')}}" class="btn btn-secondary w-100">
+                    <i class="bi bi-arrow-left"></i> Back to Users
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{%endblock%}
+
+
+
+
