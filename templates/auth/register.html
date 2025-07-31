@@ -1,0 +1,70 @@
+{% extends "base_layout.html" %}
+
+{% block title %}Register - Vehicle Parking{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+<div style="margin-top: 5vh;" class="col-lg-5 col-md-6">
+        <div style="background-color: #2C2533; color: white; border-radius: 15px; border: 0;" class="card shadow-sm">
+            <div class='card-body p-4'>
+                <h2 class='text-center mb-4'><b><i>Create an Account</i></b></h2>
+
+<form method='POST' action="{{ url_for('auth.register') }}" novalidate>
+    
+    <div class="mb-3">
+        <label class="form-label" for="n">Full Name</label>
+            <input name="full_name"
+            style="background-color: #3a3142; color: white; border-color: #4a4152;"
+             type="text" class="form-control" id="n" required>
+    </div>
+    
+            <div class="mb-3">
+                <label for="p" class="form-label">Phone Number</label>
+        <input style="background-color: #3a3142; color: white; border-color: #4a4152;" type="tel"
+         name="phone" required class="form-control" id="p" >
+            </div>
+            
+    <div class="mb-3">
+<label for="u" class="form-label">Email</label>
+<input type="email" class="form-control" id="u" name="username" required
+style="background-color: #3a3142; color: white; border-color: #4a4152;"
+>
+    </div>
+    
+    
+            <div class="mb-3">
+                <label for="pw" class="form-label">Password</label>
+                <div class="input-group">
+    <input required name="password" type="password" class="form-control" id="pw" 
+        style="background-color: #3a3142; color: white; border-color: #4a4152;"
+    >
+                    <span onclick="togglePasswordVisibility('pw', 'e1')"
+                     style="cursor: pointer; background-color: #3a3142; border-color: #4a4152;" class="input-group-text">
+                        <i id="e1" class="bi bi-eye-fill"></i>
+                    </span>
+                </div>
+            </div>
+    
+    <div class="mb-3">
+        <label class="form-label" for="cp">Confirm Password</label>
+        <div class="input-group">
+            <input type="password" id="cp" class="form-control" name="confirm_password" required
+             style="background-color: #3a3142; color: white; border-color: #4a4152;">
+            <span class="input-group-text" style="cursor: pointer; background-color: #3a3142; border-color: #4a4152;" onclick="togglePasswordVisibility('cp', 'e2')" >
+                <i class="bi bi-eye-fill" id="e2"></i>
+            </span>
+        </div>
+    </div>
+    
+        <button class="btn btn-primary w-100" type="submit" >
+            <i class="bi bi-person-plus me-2"></i>Register
+        </button>
+</form>
+        <div class="mt-3" style="text-align: center;">
+            <p><span>Already have an account?</span> <a style='color: #ffc107;' href="{{ url_for('auth.login') }}">Login here</a></p>
+        </div>
+    </div>
+        </div>
+</div>
+</div>
+{% endblock %}

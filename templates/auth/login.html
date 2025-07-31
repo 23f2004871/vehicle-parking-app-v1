@@ -1,0 +1,63 @@
+{% extends "base_layout.html" %}
+
+{% block title %}Login - Vehicle Parking{% endblock %}
+
+
+{% block content %}
+<div class='row justify-content-center'>
+<div class="col-md-6 col-lg-4" style="margin-top: 10vh;">
+<div class="card fc" style="background-color: #2C2533; color: white; border: 0; border-radius: 15px;">
+<div class="card-body p-4">
+
+<h2 class="text-center mb-4">
+    <b>Login</b>
+</h2>
+<br>
+
+<form action = "{{ url_for('auth.login') }}" method='POST'>
+
+<div class="mb-3 fig">
+    <i class="bi bi-envelope-fill fi" style = "color: #ffc107;"></i>
+    <input 
+        type="email" 
+        class = "form-control" 
+        id="u" name="username" placeholder="Email" required
+        style="background-color: #3a3142; color: white; border-color: #4a4152;"
+    >
+</div>
+
+    <div class="mb-3">
+<label for="p" class='form-label'>Password</label>
+<div class = "input-group">
+<input type="password" class="form-control" 
+id="p"
+name="password" required
+style="background-color: #3a3142; color: white; border-color: #4a4152;"
+>
+
+<span class="input-group-text" 
+    style='cursor: pointer; background-color: #3a3142; border-color: #4a4152;' 
+        onclick="togglePasswordVisibility('p', 'e')">
+
+<i class="bi bi-eye-fill" id = "e" style="color:white;"></i>
+
+</span>
+</div>
+    </div>
+
+
+<button type="submit" 
+class="btn btn-primary w-100">
+<i class="bi bi-box-arrow-in-right me-2"></i>Login
+</button>
+<p></p>
+</form>
+<div style="text-align: center; margin-top: 1.25rem;">
+<span>Don't have an account? </span><a href="{{ url_for('auth.register') }}" style = "color: #ffc107;">Sign Up</a>
+</div>
+
+</div>
+</div>
+</div>
+</div>
+{% endblock %}

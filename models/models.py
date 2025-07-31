@@ -1,8 +1,14 @@
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
-from werkzeug.security import generate_password_hash
+import pytz
+from werkzeug.security import generate_password_hash, check_password_hash
 
 db=SQLAlchemy()
+
+IST = pytz.timezone('Asia/Kolkata')
+
+def get_ist_now():
+    return datetime.now(IST)
 
 class User(db.Model):
     __tablename__='user'
@@ -11,16 +17,15 @@ class User(db.Model):
     password_hash=db.Column(db.String(256),nullable=False)
     full_name=db.Column(db.String(100),nullable=True)
     email=db.Column(db.String(120),unique=True,nullable=True)
-    pno=db.Column(db.String(15  ),unique=True,nullable=True)
+    pno=db.Column(db.String(15),unique=True,nullable=True)
     add=db.Column(db.String(200),nullable=True) 
     role=db.Column(db.String(10),nullable=False,default='user')
     active=db.Column(db.Boolean,nullable=False,default=True)
     llgoin=db.Column(db.DateTime,nullable=True)
-    creation=db.Column(db.DateTime,nullable=False,default=datetime.utcnow)
-    updation=db.Column(db.DateTime,nullable=False,default=datetime.utcnow,onupdate=datetime.utcnow)
+    creation=db.Column(db.DateTime,nullable=False,default=get_ist_now)
+    updation=db.Column(db.DateTime,nullable=False,default=get_ist_now,onupdate=get_ist_now)
     reservations=db.relationship('Reservation',backref='user',lazy=True,cascade="all,delete-orphan")
     vehicles=db.relationship('Vehicle',backref='owner',lazy=True,cascade="all,delete-orphan")
-    reviews=db.relationship('Review',backref='user_reviews',lazy=True,cascade="all,delete-orphan")
 
     def set_password(self,password):
         self.password_hash=generate_password_hash(password)
@@ -46,7 +51,7 @@ class Parkingplaces(db.Model):
     ratings=db.Column(db.Float,nullable=True,default=0.0)
     reviewno=db.Column(db.Integer,nullable=True,default=0)
     spots=db.relationship('Parkingspace',backref='lot',lazy=True,cascade="all,delete-orphan")
-    reviews=db.relationship('Review',backref='lot_reviews',lazy=True,cascade="all,delete-orphan")
+    reviews=db.relationship('Review',backref='lot',lazy=True,cascade="all,delete-orphan")
 
 
 class Parkingspace(db.Model):
@@ -66,7 +71,7 @@ class Parkingspace(db.Model):
 class Reservation(db.Model):
     __tablename__='reservation'
     id=db.Column(db.Integer,primary_key=True)
-    parking_timestamp=db.Column(db.DateTime,nullable=False,default=datetime.utcnow)
+    parking_timestamp=db.Column(db.DateTime,nullable=True)  
     leaving_timestamp=db.Column(db.DateTime,nullable=True)
     parking_cost=db.Column(db.Float,nullable=True)
     durmin=db.Column(db.Integer,nullable=True)
@@ -76,8 +81,8 @@ class Reservation(db.Model):
     reservestatus=db.Column(db.String(20),nullable=False,default='active')
     pstatus=db.Column(db.String(20),nullable=False,default='pending')
     pmethod=db.Column(db.String(20),nullable=True)
-    createat=db.Column(db.DateTime,nullable=False,default=datetime.utcnow)
-    updateat=db.Column(db.DateTime,nullable=False,default=datetime.utcnow,onupdate=datetime.utcnow)
+    createat=db.Column(db.DateTime,nullable=False,default=get_ist_now)
+    updateat=db.Column(db.DateTime,nullable=False,default=get_ist_now,onupdate=get_ist_now)
     uid=db.Column(db.Integer,db.ForeignKey('user.id'),nullable=False)
     sid=db.Column(db.Integer,db.ForeignKey('parking_space.id'),nullable=False)
     vid=db.Column(db.Integer,db.ForeignKey('vehicle.id'),nullable=True)
@@ -110,3 +115,4 @@ class Review(db.Model):
     timestamp=db.Column(db.DateTime,nullable=False,default=datetime.utcnow)
     lid=db.Column(db.Integer,db.ForeignKey('parking_places.id'),nullable=False)
     uid=db.Column(db.Integer,db.ForeignKey('user.id'),nullable=False)
+    user = db.relationship('User', backref='user_reviews')
